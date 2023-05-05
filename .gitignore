@@ -199,3 +199,4 @@ pyrightconfig.json
 !wrapper.ipynb
 !wrapper_solution.ipynb
 !cli.txt
+!wrapper.py
