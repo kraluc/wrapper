@@ -194,7 +194,9 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python
 
+## ignore everything in the folder
 /*
+## use ! to reverse the previous action for the following files...
 !README.md
 !wrapper.ipynb
 !wrapper_solution.ipynb
