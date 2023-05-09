@@ -143,8 +143,8 @@ if __name__ == "__main__":
         help="enable debug",
     )
     parser.add_argument(
-        "--clis",
-        "-c",
+        "--input",
+        "-i",
         type=str,
         default=DEFAULT_INPUT_FILE,
         const=DEFAULT_INPUT_FILE,
@@ -190,7 +190,7 @@ if __name__ == "__main__":
                 with open(log, mode="w", encoding="UTF-8") as f:
                     f.truncate(0)
 
-        input_file = str(args.clis)
+        input_file = str(args.input)
         output_file = str(args.output)
 
         logger.info("--------- BEGIN %s -------", file)
