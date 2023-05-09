@@ -47,7 +47,7 @@ logger.addHandler(f_handler)
 
 # Global Variables
 
-DEFAULT_INPUT_FILE = "cli.txt"
+DEFAULT_INPUT_FILE = "clis.txt"
 DEFAULT_OUTPUT_FILE = f"wrapped_{DEFAULT_INPUT_FILE}"
 
 # Functions
