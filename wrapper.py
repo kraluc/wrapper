@@ -55,9 +55,12 @@ DEFAULT_OUTPUT_FILE = f"wrapped_{DEFAULT_INPUT_FILE}"
 
 def commands_from_file(filename: str) -> list:
     try:
+        # open input file to read commands
         with open(file=filename, mode="r", encoding="UTF-8") as f_read:
             logger.debug("opened %r for reading", filename)
             commands = f_read.readlines()
+        # Remove end of line characters
+        commands = [cli.strip() for cli in commands]
         logger.info("read command(s): %r", commands)
         return commands
     except FileNotFoundError as err:
@@ -94,8 +97,12 @@ def main(input: str, output: str):
     """main function"""
     # Read input commands
     commands = commands_from_file(input)
-    # Generate wrapped commands
 
+    print("\ncommands read from %s:\n" % input)
+    for cli in commands:
+        print(cli)
+
+    # Generate wrapped commands
     wrapped_commands = [wrapper(cli) for cli in commands]
 
     # Display commands and write them to file
