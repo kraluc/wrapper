@@ -69,23 +69,29 @@ def commands_from_file(filename: str) -> list:
         raise ValueError
 
 
-def wrapper(cli: str) -> str:
+def header(msg: str, sep: str = "="):
+    print(msg)
+    print("=" * len(msg))
+    print()
+
+
+def wrapper(cli: str) -> list:
     """
     wrapper: generate a command string, add a timestamp and redirect the output to file
     """
     # first line is a comment showing the command name
     template = "%s >> $(SWITCHNAME)-debugs.txt" + "\n"
-
-    wrapped_command = template % 'echo "### %s"' % cli
-    wrapped_command += template % "show clock"
-    wrapped_command += template % cli
-    return wrapped_command
+    wrapped_commands = template % 'echo "### %s"' % cli
+    wrapped_commands += template % "show clock"
+    wrapped_commands += template % cli
+    return wrapped_commands
 
 
 def wite_commands_to_file(commands: list, output: str):
     try:
+        commands = list(commands)
         with open(file=output, mode="w", encoding="UTF-8") as f_write:
-            logger.debug("opened %r for reading", output)
+            logger.debug("opened %r for writing", output)
             f_write.writelines(commands)
         logger.info("command(s) written to: %r", output)
     except FileNotFoundError as err:
@@ -93,20 +99,31 @@ def wite_commands_to_file(commands: list, output: str):
         raise ValueError
 
 
+def print_commands(commands: list):
+    for cli in commands:
+        print(cli)
+
+
 def main(input: str, output: str):
     """main function"""
     # Read input commands
     commands = commands_from_file(input)
-
-    print("\ncommands read from %s:\n" % input)
-    for cli in commands:
-        print(cli)
+    msg = "\ncommands read from %s:" % input
+    header(msg)
+    print_commands(commands)
+    print()
 
     # Generate wrapped commands
     wrapped_commands = [wrapper(cli) for cli in commands]
 
+    msg = "wrapped commands:"
+    header(msg)
+    print("\n".join(wrapped_commands))
+    print()
+
     # Display commands and write them to file
     wite_commands_to_file(wrapped_commands, output)
+    print("\nwrapped commands saved to %r" % output)
 
 
 if __name__ == "__main__":
