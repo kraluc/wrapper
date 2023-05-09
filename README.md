@@ -37,3 +37,14 @@ This script generates a new list of commands that includes capturing the command
         with open(file="output.txt", mode="w", encoding="UTF-8") as f_write:
             f_write.write(my_stuff)
 ```
+
+## Getting Started
+
+2 Jupyter notebooks are provided for training:
+
++ [wrapper.ipynb](./wrapper.ipynb) includes the overall structure (solution removed)
++ [wrapper_solution.ipynb](./wrapper_solution.ipynb) includes a proposed solution
+
+a Python executable with logging and argparse example
+
++ [wrapper.py](./wrapper.py)
