@@ -45,16 +45,66 @@ f_handler.setFormatter(f_format)
 logger.addHandler(c_handler)
 logger.addHandler(f_handler)
 
+# Global Variables
 
-def main(input: str, output: str, list: bool):
-    logger.debug("debug example")
-    logger.info("info example")
-    logger.warning("warning example")
-    print(os.path.basename(__file__))
+DEFAULT_INPUT_FILE = "cli.txt"
+DEFAULT_OUTPUT_FILE = f"wrapped_{DEFAULT_INPUT_FILE}"
+
+# Functions
+
+
+def commands_from_file(filename: str) -> list:
+    try:
+        with open(file=filename, mode="r", encoding="UTF-8") as f_read:
+            logger.debug("opened %r for reading", filename)
+            commands = f_read.readlines()
+        logger.info("read command(s): %r", commands)
+        return commands
+    except FileNotFoundError as err:
+        # logger.exception(err)
+        logger.warning("File Not Found: %r", filename)
+        raise ValueError
+
+
+def wrapper(cli: str) -> str:
+    """
+    wrapper: generate a command string, add a timestamp and redirect the output to file
+    """
+    # first line is a comment showing the command name
+    template = "%s >> $(SWITCHNAME)-debugs.txt" + "\n"
+
+    wrapped_command = template % 'echo "### %s"' % cli
+    wrapped_command += template % "show clock"
+    wrapped_command += template % cli
+    return wrapped_command
+
+
+def wite_commands_to_file(commands: list, output: str):
+    try:
+        with open(file=output, mode="w", encoding="UTF-8") as f_write:
+            logger.debug("opened %r for reading", output)
+            f_write.writelines(commands)
+        logger.info("command(s) written to: %r", output)
+    except FileNotFoundError as err:
+        logger.exception(err)
+        raise ValueError
+
+
+def main(input: str, output: str):
+    """main function"""
+    # Read input commands
+    commands = commands_from_file(input)
+    # Generate wrapped commands
+
+    wrapped_commands = [wrapper(cli) for cli in commands]
+
+    # Display commands and write them to file
+    wite_commands_to_file(wrapped_commands, output)
 
 
 if __name__ == "__main__":
     file = os.path.basename(__file__)
+    logfile = file.replace(".py", ".log")
     print(f"\nexecuting {file} as a module...")
 
     # CLI argument Parsing
@@ -69,37 +119,29 @@ if __name__ == "__main__":
         help="enable debug",
     )
     parser.add_argument(
-        "--list",
-        "-l",
-        action="store_true",
-        default=False,
-        help="list commands from input file. (Default: False)",
+        "--clis",
+        "-c",
+        type=str,
+        default=DEFAULT_INPUT_FILE,
+        const=DEFAULT_INPUT_FILE,
+        nargs="?",
+        help="file containing show commands (Default: %r)." % DEFAULT_INPUT_FILE,
     )
     parser.add_argument(
         "--mode",
         "-m",
         choices=["w", "a"],
         default="w",
-        help="syslog file mode ('w' or 'a'). (default: 'w')",
+        help=f"'a'ppend or over'w'rite logs to '{logfile}'. Default: 'w'",
     )
     parser.add_argument(
         "--output",
         "-o",
         type=str,
-        default="wrapped_clis.txt",
-        const="wrapped_clis.txt",
+        default=DEFAULT_OUTPUT_FILE,
+        const=DEFAULT_OUTPUT_FILE,
         nargs="?",
-        help="target file where to save wrapped commands",
-    )
-
-    parser.add_argument(
-        "--input",
-        "-i",
-        type=str,
-        default="clis.txt",
-        const="clis.txt",
-        nargs="?",
-        help="input files containing show commands",
+        help="save output to file. (Default: %r)" % DEFAULT_OUTPUT_FILE,
     )
 
     args = parser.parse_args()
@@ -118,27 +160,28 @@ if __name__ == "__main__":
                 for f in os.listdir(parent_dir)
                 if ".log" in f
             ]
-            print("\ndeleting logfile(s)\n")
+            print("\n\toverwrite existing logfile(s)")
             for log in logs:
                 print("\t%r" % log)
                 with open(log, mode="w", encoding="UTF-8") as f:
                     f.truncate(0)
 
-        input = str(args.input)
-        output = str(args.output)
-        list = bool(args.list)
+        input_file = str(args.clis)
+        output_file = str(args.output)
 
         logger.info("--------- BEGIN %s -------", file)
         main(
-            input,
-            output,
-            list,
+            input=input_file,
+            output=output_file,
         )
 
     except ValueError as err:
         logger.exception(err)
         logger.warning("Value Error...exiting")
         sys.exit()
+    except IOError as err:
+        logger.exception(err)
+        logger.warning("I/O error: {0}: {1}".format(err.errno, err.strerror))
     except KeyboardInterrupt as err:
         logger.exception(err)
         logger.warning("KeyboardInterrupt... exiting")
